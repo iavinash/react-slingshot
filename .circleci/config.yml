@@ -1,31 +1,39 @@
 version: 2.1
-orbs:
-  node: circleci/node@5.0.2
+
 jobs:
   build:
     docker:
-      - image: circleci/node:9.11.2
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout the code as the first step.
       - checkout
       - run: npm i
+      - save_cache:
+          key: "npm-packages"
+          paths:
+            - /src/node_modules
       - run: npm run lint
-    test:
-      docker:
-        - image: circleci/node:9.11.2
-      steps:
-        - checkout
-        - run: npm i
-        - run: npm run test
-    analyze:
-      docker:
-        - image: circleci/node:9.11.2
-      steps:
-        - checkout
-        - run: npm audit
+  test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-packages"
+      - run: npm i
+      - run: npm run test
+  analyze:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-packages"
+      - run: npm audit
 
 workflows:
-  my_npm_workflow:
+  my_workflow:
     jobs:
       - build
       - test:
